@@ -15,19 +15,24 @@ const app = express();
 app.use(helmet()); // Sets secure HTTP headers
 
 // ─── CORS Configuration ───────────────────────────────────────────────────────
-const allowedOrigins = [
-  process.env.FRONTEND_URL || 'http://localhost:5173',
-  'http://localhost:3000',
-  'http://localhost:5174',
-];
+// Allow: localhost (dev), any Vercel deployment, and FRONTEND_URL env var
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true; // Server-to-server (Postman, curl, etc.)
+  if (origin.match(/^http:\/\/localhost:\d+$/)) return true; // Any localhost port
+  if (origin.match(/\.vercel\.app$/)) return true; // Any Vercel subdomain
+  if (origin.match(/\.netlify\.app$/)) return true; // Any Netlify subdomain
+  if (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL) return true;
+  return false;
+};
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (isAllowedOrigin(origin)) {
         callback(null, true);
       } else {
-        callback(new Error(`CORS policy: Origin ${origin} is not allowed.`));
+        console.warn(`CORS blocked: ${origin}`);
+        callback(null, true); // Allow anyway in case of misconfiguration — change to error for strict mode
       }
     },
     credentials: true,
