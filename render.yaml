@@ -30,6 +30,7 @@ services:
     envVars:
       - key: VITE_API_URL
         value: https://ese-aifsd-nnkx.onrender.com/api
+      # FRONTEND_URL on backend service must be: https://ese-aifsd-frontend-vlff.onrender.com
     routes:
       - type: rewrite
         source: /*
