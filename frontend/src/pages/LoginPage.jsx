@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { Eye, EyeOff, Brain, Loader2 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Eye, EyeOff, Brain, Loader2, Wifi, WifiOff } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import useAuthStore from '../store/authStore';
 
 // Floating particle for hero animation
@@ -17,10 +17,35 @@ const Particle = ({ style }) => (
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
+  // 'checking' | 'waking' | 'ready'
+  const [serverStatus, setServerStatus] = useState('checking');
   const { login, isLoading } = useAuthStore();
   const navigate = useNavigate();
 
   const { register, handleSubmit, formState: { errors } } = useForm();
+
+  // Ping backend health — show status to user during cold start
+  useEffect(() => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    let attempts = 0;
+    const maxAttempts = 8;
+
+    const ping = () => {
+      setServerStatus(attempts === 0 ? 'checking' : 'waking');
+      fetch(`${apiUrl}/health`, { signal: AbortSignal.timeout(8000) })
+        .then((res) => {
+          if (res.ok) setServerStatus('ready');
+          else throw new Error('not ok');
+        })
+        .catch(() => {
+          attempts++;
+          if (attempts < maxAttempts) setTimeout(ping, 5000);
+          else setServerStatus('ready'); // Give up — let user try anyway
+        });
+    };
+
+    ping();
+  }, []);
 
   const onSubmit = async (data) => {
     const result = await login(data.email, data.password);
@@ -202,7 +227,38 @@ const LoginPage = () => {
             <p>Admin: <span className="text-brand-400">admin@empai.com</span> / Admin@123</p>
             <p>HR: <span className="text-brand-400">hr@empai.com</span> / Hr@12345</p>
           </div>
+
+          {/* Server status banner — shows during backend cold start */}
+          <AnimatePresence>
+            {serverStatus !== 'ready' && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 8 }}
+                className="mt-3 flex items-center gap-2 px-4 py-2.5 rounded-xl border border-amber-500/20 bg-amber-500/5 text-xs text-amber-300"
+              >
+                <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
+                <span>
+                  {serverStatus === 'checking'
+                    ? 'Connecting to server...'
+                    : '⏳ Server is waking up (free tier). Ready in ~30s...'}
+                </span>
+              </motion.div>
+            )}
+            {serverStatus === 'ready' && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="mt-3 flex items-center gap-2 px-4 py-2.5 rounded-xl border border-emerald-500/20 bg-emerald-500/5 text-xs text-emerald-400"
+              >
+                <Wifi className="w-3.5 h-3.5 shrink-0" />
+                <span>Server is online and ready ✓</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
+
       </motion.div>
     </div>
   );

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import ProtectedRoute from './routes/ProtectedRoute';
@@ -13,7 +14,33 @@ import AnalyticsPage from './pages/AnalyticsPage';
 import ProfilePage from './pages/ProfilePage';
 import NotFoundPage from './pages/NotFoundPage';
 
+/**
+ * Wake up the Render backend immediately when the frontend loads.
+ * Render free-tier web services sleep after 15 min of inactivity.
+ * This silent ping runs BEFORE the user even clicks login, so by
+ * the time they submit credentials the backend is already warm.
+ */
+const useBackendWakeUp = () => {
+  useEffect(() => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    const healthUrl = `${apiUrl}/health`;
+
+    // Silent fetch — we don't show any UI for this
+    fetch(healthUrl, { method: 'GET', signal: AbortSignal.timeout(30000) })
+      .then((res) => {
+        if (res.ok) console.log('✅ Backend is awake and ready');
+      })
+      .catch(() => {
+        // Silently ignore — backend might just be waking up
+        console.log('⏳ Backend warming up...');
+      });
+  }, []); // Run once on app mount
+};
+
 function App() {
+  // Wake up the Render backend on every page load
+  useBackendWakeUp();
+
   return (
     <BrowserRouter>
       <Toaster
