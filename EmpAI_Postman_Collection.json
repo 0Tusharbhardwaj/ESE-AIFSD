@@ -1,0 +1,150 @@
+{
+  "info": {
+    "name": "EmpAI API Collection",
+    "description": "Complete Postman collection for EmpAI - AI Employee Performance Analytics System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Admin User\",\"email\":\"admin@empai.com\",\"password\":\"Admin@123\",\"role\":\"Admin\"}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [{ "listen": "test", "script": { "exec": ["const r = pm.response.json(); if(r.token) { pm.collectionVariables.set('token', r.token); }"] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/login",
+            "body": { "mode": "raw", "raw": "{\"email\":\"admin@empai.com\",\"password\":\"Admin@123\"}" }
+          }
+        },
+        {
+          "name": "Get Me",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/auth/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Employees",
+      "item": [
+        {
+          "name": "Add Employee",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/employees",
+            "body": { "mode": "raw", "raw": "{\"name\":\"Aman Verma\",\"email\":\"aman@gmail.com\",\"department\":\"Engineering\",\"skills\":[\"React\",\"Node.js\",\"MongoDB\"],\"performanceScore\":85,\"experience\":3}" }
+          }
+        },
+        {
+          "name": "Get All Employees",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/employees?page=1&limit=10&sort=-performanceScore", "host": ["{{baseUrl}}"], "path": ["employees"], "query": [{"key":"page","value":"1"},{"key":"limit","value":"10"},{"key":"sort","value":"-performanceScore"}] }
+          }
+        },
+        {
+          "name": "Search Employee by Department",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/employees/search?department=Engineering", "host": ["{{baseUrl}}"], "path": ["employees","search"], "query": [{"key":"department","value":"Engineering"}] }
+          }
+        },
+        {
+          "name": "Get Employee by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/employees/:id"
+          }
+        },
+        {
+          "name": "Update Employee",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/employees/:id",
+            "body": { "mode": "raw", "raw": "{\"performanceScore\":90}" }
+          }
+        },
+        {
+          "name": "Delete Employee",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/employees/:id"
+          }
+        },
+        {
+          "name": "Get Analytics",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/employees/analytics"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AI",
+      "item": [
+        {
+          "name": "AI Recommendation (by ID)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/ai/recommend",
+            "body": { "mode": "raw", "raw": "{\"employeeId\":\"REPLACE_WITH_EMPLOYEE_ID\"}" }
+          }
+        },
+        {
+          "name": "AI Recommendation (inline data)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/ai/recommend",
+            "body": { "mode": "raw", "raw": "{\"employeeData\":{\"name\":\"Aman Verma\",\"department\":\"Engineering\",\"performanceScore\":85,\"experience\":3,\"skills\":[\"React\",\"Node.js\",\"MongoDB\"]}}" }
+          }
+        },
+        {
+          "name": "AI Rank All Employees",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/ai/rank",
+            "body": { "mode": "raw", "raw": "{}" }
+          }
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/health"
+          }
+        }
+      ]
+    }
+  ]
+}
