@@ -86,7 +86,6 @@ employeeSchema.virtual('performanceTier').get(function () {
 // Indexes for optimized queries
 employeeSchema.index({ department: 1 });
 employeeSchema.index({ performanceScore: -1 });
-employeeSchema.index({ email: 1 }, { unique: true });
 employeeSchema.index({ name: 'text', email: 'text', department: 'text' }); // Full-text search
 
 module.exports = mongoose.model('Employee', employeeSchema);

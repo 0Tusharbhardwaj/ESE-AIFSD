@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment variables (NEVER commit real credentials)
+.env
+**/.env
+
+# Build outputs
+dist/
+build/
+frontend/dist/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Testing
+coverage/
+
+# Misc
+*.local
